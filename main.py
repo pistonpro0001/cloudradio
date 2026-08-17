@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 import threading
 import scratchattach as sa
 import time
@@ -33,7 +33,40 @@ app = Flask(__name__)
 status = ['<span style="color:gold">Booting...</span>']
 @app.route('/')
 def home():
-    return '<pre style="font-size:22px">' + "\n".join(status[-150:]) + "</pre>"
+    return """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>cloudradio Logs</title>
+        <style>
+            body { background-color: #1e1e1e; color: #d4d4d4; font-family: monospace; padding: 20px; }
+            #logs { font-size: 22px; white-space: pre-wrap; word-wrap: break-word; }
+        </style>
+    </head>
+    <body>
+        <div id="logs">Loading logs...</div>
+
+        <script>
+            function fetchLogs() {
+                fetch('/raw_logs')
+                    .then(response => response.text())
+                    .then(data => {
+                        const logDiv = document.getElementById('logs');
+                        logDiv.innerHTML = data;
+                        
+                        window.scrollTo(0, document.body.scrollHeight);
+                    });
+            }
+            fetchLogs();
+            setInterval(fetchLogs, 1000);
+        </script>
+    </body>
+    </html>
+    """
+
+@app.route('/raw_logs')
+def raw_logs():
+    return "\n".join(status[-150:])
 
 in_song = False
 def log(msg, color="grey"):
