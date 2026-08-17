@@ -6,6 +6,8 @@ import random
 import os
 import warnings
 import math
+from zoneinfo import ZoneInfo
+from getsun import sunrise, sunset
 warnings.filterwarnings('ignore', category=sa.LoginDataWarning)
 
 from dotenv import load_dotenv
@@ -13,24 +15,24 @@ import urllib.request
 import json
 from datetime import datetime, timezone
 
-def get_today_sunset():
-    try:
-        lat = "40.5"
-        lng = "-111.9"
-        url = f"https://api.sunrise-sunset.org/json?lat={lat}&lng={lng}&formatted=0"
-        
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req) as response:
-            data = json.loads(response.read().decode())
-            
-        if data["status"] == "OK":
-            sunset_str = data["results"]["sunset"]
-            sunset_time = datetime.strptime(sunset_str, "%Y-%m-%dT%H:%M:%S%z")
-            return sunset_time
-    except Exception as e:
-        print(f"[API Error] Using fallback sunset: {e}")
-    now = datetime.now(timezone.utc)
-    return now.replace(hour=2, minute=30, second=0, microsecond=0)
+# def get_today_sunset():
+#     try:
+#         lat = "40.5"
+#         lng = "-111.9"
+#         url = f"https://api.sunrise-sunset.org/json?lat={lat}&lng={lng}&formatted=0"
+#         
+#         req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+#         with urllib.request.urlopen(req) as response:
+#             data = json.loads(response.read().decode())
+#             
+#         if data["status"] == "OK":
+#             sunset_str = data["results"]["sunset"]
+#             sunset_time = datetime.strptime(sunset_str, "%Y-%m-%dT%H:%M:%S%z")
+#             return sunset_time
+#     except Exception as e:
+#         print(f"[API Error] Using fallback sunset: {e}")
+#     now = datetime.now(timezone.utc)
+#     return now.replace(hour=2, minute=30, second=0, microsecond=0)
 
 load_dotenv()
 
@@ -126,8 +128,17 @@ def run_bot():
             log("Cloud is ready", "lime")
             
             log("Fetching today's sunset time profile...", "gold")
-            TODAY_SUNSET = get_today_sunset()
-            log(f"Sunset locked in for: {TODAY_SUNSET.astimezone().strftime('%I:%M %p')}", "gold")
+            raw_sunset = sunset()   
+            raw_sunrise = sunrise() 
+            
+            local_tz = ZoneInfo("America/Denver")
+            local_sunset = raw_sunset.astimezone(local_tz)
+            local_sunrise = raw_sunrise.astimezone(local_tz)
+            
+            log(f"Sunset/Sunrise is: {local_sunset.strftime('%I:%M %p')}, {local_sunrise.strftime('%I:%M %p')}", "gold")
+            
+            SUNSET = local_sunset.replace(tzinfo=None)
+            SUNRISE = local_sunrise.replace(tzinfo=None)
             
             cur_song = grab_from_bag()
             cloud.set_var("song_num", str(cur_song + 1))
@@ -136,10 +147,11 @@ def run_bot():
                 log("Starting new phase...")
                 time.sleep(0.5)
                 
-                now_time = datetime.now(timezone.utc)
-                if now_time > TODAY_SUNSET:
+                now = datetime.now(local_tz).replace(tzinfo=None)
+                if SUNRISE <= now <= SUNSET:
                     is_night_status = "1"
                     log("Night mode active.", "purple")
+                    
                 else:
                     is_night_status = "0"
                     log("Day mode active.", "orange")
