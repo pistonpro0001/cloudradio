@@ -22,7 +22,13 @@ def run_bot():
                 total_time = float(cloud.get_var("track-length")) #no need to check if it isdigit, will always be a number to two decimals
                 print(f"Song length is {total_time} secs")
                 print("Sleeping the song out.")
-                time.sleep(total_time)
+                start = time.time()
+                while True:
+                    elapsed = time.time() - start
+                    cloud.set_var("progress", round(elapsed, 1))
+                    if elapsed >= total_time:
+                        break
+                    time.sleep(.1)
                 cloud.set_var("song-#", str(random.randint(1, 2)))
                 cloud.set_var("ready?", "1")
                 print("Successfully restarted and chose new song!")
