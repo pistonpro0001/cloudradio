@@ -10,7 +10,7 @@ app = Flask(__name__)
 status = ["Cloud is ready"]
 @app.route('/')
 def home():
-    return "\n".join(status[-15:])
+    return "<pre>" + "\n".join(status[-15:]) + "</pre>"
 
 def run_bot():
     global status
