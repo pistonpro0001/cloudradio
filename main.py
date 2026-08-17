@@ -7,10 +7,10 @@ import os
 
 app = Flask(__name__)
 
-status = ["Booting..."]
+status = ['<span style="color:gold">Booting...</span>']
 @app.route('/')
 def home():
-    return "<pre>" + "\n".join(status[-150:]) + "</pre>"
+    return '<pre style="font-size:22px">' + "\n".join(status[-150:]) + "</pre>"
 
 def log(msg, color="grey"):
     global status
