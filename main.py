@@ -35,8 +35,9 @@ def run_bot():
                 cloud.set_var("ready?", "0")
                 cur_song = cloud.get_var("song-#")
                 if cur_song is None:
-                    cur_song = 0
-                    log("Could not get the song number.", "red")
+                    cur_song = random.randint(0, len(track_lengths)-1)
+                    log("Could not get the song number, resetting it to a random number.", "red")
+                    cloud.set_var("song-#", str(cur_song+1))
                 total_time = track_lengths[int(cur_song)] * 100
                 cloud.set_var("tracklength", str(total_time))
                 total_time /= 100
@@ -50,7 +51,7 @@ def run_bot():
                     if elapsed >= total_time:
                         break
                     time.sleep(.1)
-                cloud.set_var("song-#", str(random.randint(1, 12)))
+                cloud.set_var("song-#", str(random.randint(1, len(track_lengths))))
                 cloud.set_var("ready?", "1")
                 log("Successfully restarted and chose new song!")
                 time.sleep(2)
