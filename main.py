@@ -4,8 +4,9 @@ import scratchattach as sa
 import time
 import random
 import os
+from dotenv import load_dotenv
 
-import scratchattach as sa
+load_dotenv()
 
 # --- SCRATCHATTACH BUG #608 ---
 original_process = sa.Session._process_session_id
@@ -82,4 +83,4 @@ def run_bot():
 
 threading.Thread(target=run_bot, daemon=True).start()
 
-app.run(host="0.0.0.0", port=10000, debug=True)
+app.run(host="0.0.0.0", port=11303, debug=True)
