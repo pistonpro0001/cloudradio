@@ -60,8 +60,7 @@ def run_bot():
             
             while True:
                 log("Starting new phase...")
-                cloud.set_var("ready", "0")
-                time.sleep(0.1)  # <-- Give it a split second to send
+                time.sleep(0.5)  # <-- Give it a split second to send
                 
                 cur_song = cloud.get_var("song_num")
                 if cur_song is None:
@@ -69,13 +68,13 @@ def run_bot():
                     log("Could not get the song number, resetting it to a random number.", "red")
                     cloud.set_var("song_num", str(cur_song+1))
                     log("It is now song " + str(cloud.get_var("song_num")))
-                    time.sleep(0.1) # <-- Give it a split second to send
+                    time.sleep(0.5) # <-- Give it a split second to send
                 else:
                     cur_song = int(cur_song) - 1
                     
                 total_time = track_lengths[int(cur_song)] * 100
                 cloud.set_var("tracklength", str(total_time))
-                time.sleep(0.1)  # <-- Give it a split second to send
+                time.sleep(0.5)  # <-- Give it a split second to send
                 
                 total_time /= 100
                 log(f"Song length is {total_time} secs")
@@ -84,6 +83,8 @@ def run_bot():
                 start = time.time()
                 next_update = start + 1.0
                 last_progress = None
+                
+                cloud.set_var("ready", "0")
                 
                 while True:
                     elapsed = time.time() - start
@@ -116,7 +117,7 @@ def run_bot():
                 
                 cloud.set_var("ready", "1")
                 log(f"Successfully advanced to song #{new_song} and set ready to 1!")
-                time.sleep(2.0)
+                time.sleep(4.0)
                 
         except Exception as e:
             import traceback
