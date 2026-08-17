@@ -5,6 +5,23 @@ import time
 import random
 import os
 
+import scratchattach as sa
+
+# --- SCRATCHATTACH BUG #608 ---
+original_process = sa.Session._process_session_id
+
+def patched_process_session_id(self):
+    try:
+        original_process(self)
+    except KeyError as e:
+        if str(e) == "'_language'":
+            self.language = "en"
+            print("[Patch] Bypassed missing '_language' key successfully.")
+        else:
+            raise e
+
+sa.Session._process_session_id = patched_process_session_id
+
 app = Flask(__name__)
 
 status = ['<span style="color:gold">Booting...</span>']
@@ -26,7 +43,7 @@ def run_bot():
         if try_ != 0:
             log("Reconnecting...", "gold")
         try:
-            session = sa.login(os.getenv("SCRATCH_USER"), os.getenv("SCRATCH_PASS"))
+            session = sa.login_by_id(os.getenv("SC_SESS_ID"))
             cloud = session.connect_cloud("1314420436")
             log("Cloud is ready", "lime")
             
