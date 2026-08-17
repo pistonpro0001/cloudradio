@@ -38,7 +38,7 @@ def home():
 def log(msg, color="grey"):
     global status
     status.append(f'<span style="color:{color}">{msg}</span>')
-    print(msg)
+    #print(msg)
 
 track_lengths = [147.53, 354.02, 175.2, 162.04, 183.44, 193.37, 185.56, 235.55, 261.75, 189.86, 151.35, 208.08]
 print(os.getenv("SCRATCH_USER"))
@@ -49,7 +49,11 @@ def run_bot():
         if try_ != 0:
             log("Reconnecting...", "gold")
         try:
-            session = sa.login_by_id(os.getenv("SC_SESS_ID"))
+            try:
+                session = sa.login(os.getenv("SCRATCH_USER"), os.getenv("SCRATCH_PASS"))
+            except:
+                log("Couldn't login via username and password, using session id", "red")
+                session = sa.login_by_id(os.getenv("SC_SESS_ID"))
             cloud = session.connect_cloud("1314420436")
             log("Cloud is ready", "lime")
             
