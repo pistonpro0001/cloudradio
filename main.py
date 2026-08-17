@@ -96,12 +96,12 @@ def run_bot():
                 
                 while True:
                     elapsed = time.time() - start
-                    current_progress = str(math.floor(elapsed))
+                    current_progress = str(round(elapsed, 2) * 100)
                     
                     if current_progress != last_progress:
                         cloud.set_var("progress", current_progress)
                         last_progress = current_progress
-                        log(f"Progress: {current_progress}/{total_time}")
+                        log(f"Progress: {float(current_progress)/100}/{total_time}")
                     
                     if elapsed >= total_time:
                         break
