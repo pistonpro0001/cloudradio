@@ -4,9 +4,14 @@ import scratchattach as sa
 import time
 import random
 import os
+import warnings
+warnings.filterwarnings('ignore', category=sa.LoginDataWarning)
+
 from dotenv import load_dotenv
 
 load_dotenv()
+
+os.environ["FLASK_ENV"] = "production"
 
 # --- SCRATCHATTACH BUG #608 ---
 original_process = sa.Session._process_session_id
@@ -62,13 +67,23 @@ def run_bot():
                 log(f"Song length is {total_time} secs")
                 log("Sleeping the song out.")
                 start = time.time()
+                next_update = start + 1.0
                 
                 while True:
                     elapsed = time.time() - start
-                    cloud.set_var("progress", round(elapsed))
+                    
+                    cloud.set_var("progress", str(round(elapsed)))
+                    
                     if elapsed >= total_time:
                         break
-                    time.sleep(.1)
+                    
+                    sleep_time = next_update - time.time()
+                    if sleep_time > 0:
+                        jitter = random.uniform(0.01, 0.05)
+                        time.sleep(sleep_time + jitter)
+                    
+                    next_update += 1.0
+                    
                 cloud.set_var("song-#", str(random.randint(1, len(track_lengths))))
                 cloud.set_var("ready", "1")
                 log("Successfully restarted and chose new song!")
