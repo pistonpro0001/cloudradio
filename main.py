@@ -103,18 +103,12 @@ def run_bot():
             cloud = session.connect_cloud(project_id="1334822091")
             log("Cloud is ready", "lime")
             
+            cur_song = grab_from_bag()
+            cloud.set_var("song_num", str(cur_song + 1))
+            
             while True:
                 log("Starting new phase...")
                 time.sleep(0.5)
-                
-                cur_song = cloud.get_var("song_num")
-                if cur_song is None:
-                    cur_song = grab_from_bag()
-                    log("Could not get the song number, resetting it to a random number.", "red")
-                    cloud.set_var("song_num", str(cur_song+1))
-                    time.sleep(0.5)
-                else:
-                    cur_song = int(cur_song) - 1
                 
                 log("It is now song " + str(cur_song+1), "green")
                     
@@ -156,10 +150,11 @@ def run_bot():
                 in_song = False
                 
                 new_song = grab_from_bag() + 1
+                cur_song = new_song - 1
                 cloud.set_var("song_num", str(new_song))
                 time.sleep(0.2)
                 
-                total_time = track_lengths[new_song - 1] * 100
+                total_time = track_lengths[cur_song] * 100
                 cloud.set_var("tracklength", str(total_time))
                 time.sleep(0.2)
                 
@@ -178,4 +173,4 @@ def run_bot():
             time.sleep(3)
 
 threading.Thread(target=run_bot, daemon=True).start()
-app.run(host="0.0.0.0", port=11303)
+app.run(host="0.0.0.0", port=11303, debug=True)
