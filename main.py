@@ -29,6 +29,7 @@ def run_bot():
             session = sa.login(os.getenv("SCRATCH_USER"), os.getenv("SCRATCH_PASS"))
             cloud = session.connect_cloud("1314420436")
             log("Cloud is ready", "lime")
+            
             while True:
                 log("Starting new phase...")
                 cloud.set_var("ready?", "0")
@@ -42,6 +43,7 @@ def run_bot():
                 log(f"Song length is {total_time} secs")
                 log("Sleeping the song out.")
                 start = time.time()
+                
                 while True:
                     elapsed = time.time() - start
                     cloud.set_var("progress", round(elapsed, 1))
@@ -52,6 +54,7 @@ def run_bot():
                 cloud.set_var("ready?", "1")
                 log("Successfully restarted and chose new song!")
                 time.sleep(2)
+                
         except Exception as e:
             import traceback
             traceback.print_exc()
