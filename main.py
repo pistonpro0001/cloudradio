@@ -112,10 +112,11 @@ def run_bot():
                     cur_song = grab_from_bag()
                     log("Could not get the song number, resetting it to a random number.", "red")
                     cloud.set_var("song_num", str(cur_song+1))
-                    log("It is now song " + str(cloud.get_var("song_num")), "green")
                     time.sleep(0.5)
                 else:
                     cur_song = int(cur_song) - 1
+                
+                log("It is now song " + str(cur_song+1), "green")
                     
                 total_time = track_lengths[int(cur_song)] * 100
                 cloud.set_var("tracklength", str(total_time))
