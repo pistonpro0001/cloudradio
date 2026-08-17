@@ -33,7 +33,7 @@ def run_bot():
                 if total_time is None:
                     total_time = 0.0
                 else:
-                    total_time = float(total_time)
+                    total_time = float(total_time) / 100
                 log(f"Song length is {total_time} secs")
                 log("Sleeping the song out.")
                 start = time.time()
@@ -43,7 +43,7 @@ def run_bot():
                     if elapsed >= total_time:
                         break
                     time.sleep(.1)
-                cloud.set_var("song-#", str(random.randint(1, 2)))
+                cloud.set_var("song-#", str(random.randint(1, 12)))
                 cloud.set_var("ready?", "1")
                 log("Successfully restarted and chose new song!")
                 time.sleep(2)
