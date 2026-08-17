@@ -50,7 +50,7 @@ def run_bot():
             
             while True:
                 log("Starting new phase...")
-                cloud.set_var("ready?", "0")
+                cloud.set_var("ready", "0")
                 cur_song = cloud.get_var("song-#")
                 if cur_song is None:
                     cur_song = random.randint(0, len(track_lengths)-1)
@@ -65,12 +65,12 @@ def run_bot():
                 
                 while True:
                     elapsed = time.time() - start
-                    cloud.set_var("progress", round(elapsed, 1))
+                    cloud.set_var("progress", round(elapsed))
                     if elapsed >= total_time:
                         break
                     time.sleep(.1)
                 cloud.set_var("song-#", str(random.randint(1, len(track_lengths))))
-                cloud.set_var("ready?", "1")
+                cloud.set_var("ready", "1")
                 log("Successfully restarted and chose new song!")
                 time.sleep(2)
                 
