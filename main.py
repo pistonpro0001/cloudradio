@@ -7,21 +7,27 @@ import os
 
 app = Flask(__name__)
 
+status = ["Cloud is ready"]
 @app.route('/')
 def home():
-    return "alive"
+    return "\n".join(status[-15:])
 
 def run_bot():
+    global status
+    try_ = 0
     while True:
+        if try_ != 0:
+            status.append("Reconnecting...")
         try:
             session = sa.login(os.getenv("SCRATCH_USER"), os.getenv("SCRATCH_PASS"))
             cloud = session.connect_cloud("1314420436")
+            status.append("Cloud is ready")
             while True:
-                print("Starting new phase...")
+                status.append("Starting new phase...")
                 cloud.set_var("ready?", "0")
                 total_time = float(cloud.get_var("track-length")) #no need to check if it isdigit, will always be a number to two decimals
-                print(f"Song length is {total_time} secs")
-                print("Sleeping the song out.")
+                status.append(f"Song length is {total_time} secs")
+                status.append("Sleeping the song out.")
                 start = time.time()
                 while True:
                     elapsed = time.time() - start
@@ -31,11 +37,13 @@ def run_bot():
                     time.sleep(.1)
                 cloud.set_var("song-#", str(random.randint(1, 2)))
                 cloud.set_var("ready?", "1")
-                print("Successfully restarted and chose new song!")
+                status.append("Successfully restarted and chose new song!")
                 time.sleep(2)
         except Exception as e:
             import traceback
             traceback.print_exc()
+            try_ += 1
+            status.append(f"Errored: {e}, try #{try_}")
             time.sleep(3)
 
 threading.Thread(target=run_bot, daemon=True).start()
