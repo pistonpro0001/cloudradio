@@ -1,2 +1,3 @@
 flask
 scratchattach
+python-dotenv
