@@ -86,6 +86,13 @@ def run_bot():
         if try_ != 0:
             log("Reconnecting...", "gold")
         try:
+            item_bag = list(range(len(track_lengths)))
+            def grab_from_bag():
+                nonlocal item_bag
+                if len(item_bag) == 0:
+                    item_bag = list(range(len(track_lengths)))
+                return item_bag.pop(random.randint(0, len(item_bag) - 1))
+            
             try:
                 session = sa.login(os.getenv("SCRATCH_USER"), os.getenv("SCRATCH_PASS"))
                 log("Managed to login via username and password.", "gold")
@@ -102,10 +109,10 @@ def run_bot():
                 
                 cur_song = cloud.get_var("song_num")
                 if cur_song is None:
-                    cur_song = random.randint(0, len(track_lengths)-1)
+                    cur_song = grab_from_bag()
                     log("Could not get the song number, resetting it to a random number.", "red")
                     cloud.set_var("song_num", str(cur_song+1))
-                    log("It is now song " + str(cloud.get_var("song_num")))
+                    log("It is now song " + str(cloud.get_var("song_num")), "green")
                     time.sleep(0.5)
                 else:
                     cur_song = int(cur_song) - 1
@@ -147,7 +154,7 @@ def run_bot():
                     
                 in_song = False
                 
-                new_song = random.randint(1, len(track_lengths))
+                new_song = grab_from_bag() + 1
                 cloud.set_var("song_num", str(new_song))
                 time.sleep(0.2)
                 
@@ -159,7 +166,6 @@ def run_bot():
                 time.sleep(0.2)
                 
                 cloud.set_var("ready", "1")
-                log(f"Successfully advanced to song #{new_song} and set ready to 1!")
                 time.sleep(4.0)
                 
         except Exception as e:
