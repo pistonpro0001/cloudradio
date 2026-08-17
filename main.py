@@ -29,7 +29,11 @@ def run_bot():
             while True:
                 log("Starting new phase...")
                 cloud.set_var("ready?", "0")
-                total_time = float(cloud.get_var("track-length")) #no need to check if it isdigit, will always be a number to two decimals
+                total_time = cloud.get_var("track-length")
+                if total_time is None:
+                    total_time = 0.0
+                else:
+                    total_time = float(total_time)
                 log(f"Song length is {total_time} secs")
                 log("Sleeping the song out.")
                 start = time.time()
