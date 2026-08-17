@@ -15,7 +15,10 @@ def home():
 def log(msg, color="grey"):
     global status
     status.append(f'<span style="color:{color}">{msg}</span>')
+    print(msg)
 
+track_lengths = [147.53, 354.02, 175.2, 162.04, 183.44, 193.37, 185.56, 235.55, 261.75, 189.86, 151.35, 208.08]
+print(os.getenv("SCRATCH_USER"))
 def run_bot():
     global status
     try_ = 0
@@ -29,14 +32,13 @@ def run_bot():
             while True:
                 log("Starting new phase...")
                 cloud.set_var("ready?", "0")
-                for _ in range(20):
-                    cloud.set_var("hit", "1")
-                    total_time = cloud.get_var("tracklength")
-                    if total_time is None:
-                        total_time = 0.0
-                    else:
-                        total_time = float(total_time) / 100
-                    time.sleep(.05)
+                cur_song = cloud.get_var("song-#")
+                if cur_song is None:
+                    cur_song = 0
+                    log("Could not get the song number.", "red")
+                total_time = track_lengths[int(cur_song)] * 100
+                cloud.set_var("tracklength", str(total_time))
+                total_time /= 100
                 log(f"Song length is {total_time} secs")
                 log("Sleeping the song out.")
                 start = time.time()
@@ -59,4 +61,4 @@ def run_bot():
 
 threading.Thread(target=run_bot, daemon=True).start()
 
-app.run(host="0.0.0.0", port=10000)
+app.run(host="0.0.0.0", port=10000, debug=True)
