@@ -29,7 +29,7 @@ def run_bot():
             while True:
                 log("Starting new phase...")
                 cloud.set_var("ready?", "0")
-                total_time = cloud.get_var("track-length")
+                total_time = cloud.get_var("tracklength")
                 if total_time is None:
                     total_time = 0.0
                 else:
