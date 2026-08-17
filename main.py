@@ -9,6 +9,28 @@ import math
 warnings.filterwarnings('ignore', category=sa.LoginDataWarning)
 
 from dotenv import load_dotenv
+import urllib.request
+import json
+from datetime import datetime, timezone
+
+def get_today_sunset():
+    try:
+        lat = "40.5"
+        lng = "-111.9"
+        url = f"https://api.sunrise-sunset.org/json?lat={lat}&lng={lng}&formatted=0"
+        
+        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+        with urllib.request.urlopen(req) as response:
+            data = json.loads(response.read().decode())
+            
+        if data["status"] == "OK":
+            sunset_str = data["results"]["sunset"]
+            sunset_time = datetime.strptime(sunset_str, "%Y-%m-%dT%H:%M:%S%z")
+            return sunset_time
+    except Exception as e:
+        print(f"[API Error] Using fallback sunset: {e}")
+    now = datetime.now(timezone.utc)
+    return now.replace(hour=2, minute=30, second=0, microsecond=0)
 
 load_dotenv()
 
@@ -103,12 +125,27 @@ def run_bot():
             cloud = session.connect_cloud(project_id="1334822091")
             log("Cloud is ready", "lime")
             
+            log("Fetching today's sunset time profile...", "gold")
+            TODAY_SUNSET = get_today_sunset()
+            log(f"Sunset locked in for: {TODAY_SUNSET.astimezone().strftime('%I:%M %p')}", "gold")
+            
             cur_song = grab_from_bag()
             cloud.set_var("song_num", str(cur_song + 1))
             
             while True:
                 log("Starting new phase...")
                 time.sleep(0.5)
+                
+                now_time = datetime.now(timezone.utc)
+                if now_time > TODAY_SUNSET:
+                    is_night_status = "1"
+                    log("Night mode active.", "purple")
+                else:
+                    is_night_status = "0"
+                    log("Day mode active.", "orange")
+                    
+                cloud.set_var("is_night", is_night_status)
+                time.sleep(0.2)
                 
                 log("It is now song " + str(cur_song+1), "green")
                     
