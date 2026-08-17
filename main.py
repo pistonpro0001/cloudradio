@@ -26,6 +26,7 @@ def patched_process_session_id(self):
             raise e
 
 #sa.Session._process_session_id = patched_process_session_id
+#if its giving you a keyerrr with something to do with the language, uncomment above line
 
 app = Flask(__name__)
 
@@ -34,15 +35,19 @@ status = ['<span style="color:gold">Booting...</span>']
 def home():
     return '<pre style="font-size:22px">' + "\n".join(status[-150:]) + "</pre>"
 
+in_song = False
 def log(msg, color="grey"):
     global status
-    status.append(f'<span style="color:{color}">{msg}</span>')
+    if in_song:
+        status[-1] = f'<span style="color:{color}">{msg}</span>'
+    else:
+        status.append(f'<span style="color:{color}">{msg}</span>')
     #print(msg)
 
 track_lengths = [147.53, 354.02, 175.2, 162.04, 183.44, 193.37, 185.56, 235.55, 261.75, 189.86, 151.35, 208.08]
 print(os.getenv("SCRATCH_USER"))
 def run_bot():
-    global status
+    global status, in_song
     try_ = 0
     while True:
         if try_ != 0:
@@ -60,7 +65,7 @@ def run_bot():
             
             while True:
                 log("Starting new phase...")
-                time.sleep(0.5)  # <-- Give it a split second to send
+                time.sleep(0.5)
                 
                 cur_song = cloud.get_var("song_num")
                 if cur_song is None:
@@ -68,13 +73,13 @@ def run_bot():
                     log("Could not get the song number, resetting it to a random number.", "red")
                     cloud.set_var("song_num", str(cur_song+1))
                     log("It is now song " + str(cloud.get_var("song_num")))
-                    time.sleep(0.5) # <-- Give it a split second to send
+                    time.sleep(0.5)
                 else:
                     cur_song = int(cur_song) - 1
                     
                 total_time = track_lengths[int(cur_song)] * 100
                 cloud.set_var("tracklength", str(total_time))
-                time.sleep(0.5)  # <-- Give it a split second to send
+                time.sleep(0.5)
                 
                 total_time /= 100
                 log(f"Song length is {total_time} secs")
@@ -86,14 +91,17 @@ def run_bot():
                 
                 cloud.set_var("ready", "0")
                 
+                log(f"Progress: 0/{total_time}")
+                in_song = True
+                
                 while True:
                     elapsed = time.time() - start
                     current_progress = str(math.floor(elapsed))
                     
-                    # Optimization: Only send if the value actually changed!
                     if current_progress != last_progress:
                         cloud.set_var("progress", current_progress)
                         last_progress = current_progress
+                        log(f"Progress: {current_progress}/{total_time}")
                     
                     if elapsed >= total_time:
                         break
@@ -103,6 +111,8 @@ def run_bot():
                         time.sleep(sleep_time)
                     
                     next_update += 1.0
+                    
+                in_song = False
                 
                 new_song = random.randint(1, len(track_lengths))
                 cloud.set_var("song_num", str(new_song))
@@ -120,6 +130,7 @@ def run_bot():
                 time.sleep(4.0)
                 
         except Exception as e:
+            in_song = False
             import traceback
             traceback.print_exc()
             try_ += 1
