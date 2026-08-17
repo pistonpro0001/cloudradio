@@ -29,11 +29,14 @@ def run_bot():
             while True:
                 log("Starting new phase...")
                 cloud.set_var("ready?", "0")
-                total_time = cloud.get_var("tracklength")
-                if total_time is None:
-                    total_time = 0.0
-                else:
-                    total_time = float(total_time) / 100
+                for _ in range(20):
+                    cloud.set_var("hit", "1")
+                    total_time = cloud.get_var("tracklength")
+                    if total_time is None:
+                        total_time = 0.0
+                    else:
+                        total_time = float(total_time) / 100
+                    time.sleep(.05)
                 log(f"Song length is {total_time} secs")
                 log("Sleeping the song out.")
                 start = time.time()
