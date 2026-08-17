@@ -5,6 +5,7 @@ import time
 import random
 import os
 import warnings
+import math
 warnings.filterwarnings('ignore', category=sa.LoginDataWarning)
 
 from dotenv import load_dotenv
@@ -69,6 +70,8 @@ def run_bot():
                     cloud.set_var("song_num", str(cur_song+1))
                     log("It is now song " + str(cloud.get_var("song_num")))
                     time.sleep(0.1) # <-- Give it a split second to send
+                else:
+                    cur_song = int(cur_song) - 1
                     
                 total_time = track_lengths[int(cur_song)] * 100
                 cloud.set_var("tracklength", str(total_time))
@@ -84,7 +87,7 @@ def run_bot():
                 
                 while True:
                     elapsed = time.time() - start
-                    current_progress = str(round(elapsed))
+                    current_progress = str(math.floor(elapsed))
                     
                     # Optimization: Only send if the value actually changed!
                     if current_progress != last_progress:
@@ -96,17 +99,24 @@ def run_bot():
                     
                     sleep_time = next_update - time.time()
                     if sleep_time > 0:
-                        # Slightly increased jitter to keep Scratch's spam filters happy
-                        jitter = random.uniform(0.02, 0.08)
-                        time.sleep(sleep_time + jitter)
+                        time.sleep(sleep_time)
                     
                     next_update += 1.0
-                    
-                cloud.set_var("song_num", str(random.randint(1, len(track_lengths))))
-                time.sleep(0.1) # <-- Safety sleep
+                
+                new_song = random.randint(1, len(track_lengths))
+                cloud.set_var("song_num", str(new_song))
+                time.sleep(0.2)
+                
+                total_time = track_lengths[new_song - 1] * 100
+                cloud.set_var("tracklength", str(total_time))
+                time.sleep(0.2)
+                
+                cloud.set_var("progress", "0")
+                time.sleep(0.2)
+                
                 cloud.set_var("ready", "1")
-                log("Successfully restarted and chose new song!")
-                time.sleep(2)
+                log(f"Successfully advanced to song #{new_song} and set ready to 1!")
+                time.sleep(2.0)
                 
         except Exception as e:
             import traceback
