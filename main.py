@@ -7,27 +7,31 @@ import os
 
 app = Flask(__name__)
 
-status = ["Cloud is ready"]
+status = ["Booting..."]
 @app.route('/')
 def home():
-    return "<pre>" + "\n".join(status[-15:]) + "</pre>"
+    return "<pre>" + "\n".join(status[-150:]) + "</pre>"
+
+def log(msg, color="grey"):
+    global status
+    status.append(f'<span style="color:{color}">{msg}</span>')
 
 def run_bot():
     global status
     try_ = 0
     while True:
         if try_ != 0:
-            status.append("Reconnecting...")
+            log("Reconnecting...", "gold")
         try:
             session = sa.login(os.getenv("SCRATCH_USER"), os.getenv("SCRATCH_PASS"))
             cloud = session.connect_cloud("1314420436")
-            status.append("Cloud is ready")
+            log("Cloud is ready", "lime")
             while True:
-                status.append("Starting new phase...")
+                log("Starting new phase...")
                 cloud.set_var("ready?", "0")
                 total_time = float(cloud.get_var("track-length")) #no need to check if it isdigit, will always be a number to two decimals
-                status.append(f"Song length is {total_time} secs")
-                status.append("Sleeping the song out.")
+                log(f"Song length is {total_time} secs")
+                log("Sleeping the song out.")
                 start = time.time()
                 while True:
                     elapsed = time.time() - start
@@ -37,13 +41,13 @@ def run_bot():
                     time.sleep(.1)
                 cloud.set_var("song-#", str(random.randint(1, 2)))
                 cloud.set_var("ready?", "1")
-                status.append("Successfully restarted and chose new song!")
+                log("Successfully restarted and chose new song!")
                 time.sleep(2)
         except Exception as e:
             import traceback
             traceback.print_exc()
             try_ += 1
-            status.append(f"Errored: {e}, try #{try_}")
+            log(f'Errored: "{e}", try #{try_}', "red")
             time.sleep(3)
 
 threading.Thread(target=run_bot, daemon=True).start()
