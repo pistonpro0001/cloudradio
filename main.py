@@ -173,4 +173,4 @@ def run_bot():
             time.sleep(3)
 
 threading.Thread(target=run_bot, daemon=True).start()
-app.run(host="0.0.0.0", port=11303, debug=True)
+app.run(host="0.0.0.0", port=11303)
